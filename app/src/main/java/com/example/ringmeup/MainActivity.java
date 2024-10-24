@@ -135,12 +135,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpWebView() {
+        webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
             private boolean pageLoadFailed = false;
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
+
                 pageLoadFailed = false;
                 loading.setVisibility(View.VISIBLE); // Show loading when the page starts
                 webView.setVisibility(View.GONE); // Hide WebView while loading
@@ -157,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
                     loading.setVisibility(View.VISIBLE); // or handle it differently
                     webView.setVisibility(View.GONE);
                 }
+
+                Log.d("TAG", "LOAD FAILED: " + pageLoadFailed);
             }
 
             @Override
@@ -164,12 +167,12 @@ public class MainActivity extends AppCompatActivity {
                 // Handle general errors
                 int errorCode = error.getErrorCode();
                 pageLoadFailed = true; // Set the flag to true if an error occurs
-
+                Log.d("TAG", "ERROR RECEIVED: " + error.getErrorCode());
                 // Display the loading TextView for cleartext error or any other loading error
-                if (errorCode == WebViewClient.ERROR_FAILED_SSL_HANDSHAKE || errorCode == WebViewClient.ERROR_UNKNOWN) {
-                    loading.setVisibility(View.VISIBLE);
-                    webView.setVisibility(View.GONE);
-                }
+//                if (errorCode == WebViewClient.ERROR_FAILED_SSL_HANDSHAKE || errorCode == WebViewClient.ERROR_UNKNOWN) {
+//                    loading.setVisibility(View.VISIBLE);
+//                    webView.setVisibility(View.GONE);
+//                }
             }
 
             @Override
@@ -194,7 +197,8 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     String ipAdd = snapshot.child("ipAddress").getValue().toString();
-                    webView.loadUrl(ipAdd);
+                    webView.loadUrl("http://"+ ipAdd);
+
 
                 } else {
                     Log.d("TAG", "Snapshot doesn't exist ");
@@ -307,5 +311,16 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webview);
         loading = findViewById(R.id.loading_TextView);
         lockBtn = findViewById(R.id.lock_Button);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+            finishAffinity();
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 }
